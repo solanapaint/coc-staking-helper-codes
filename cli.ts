@@ -49,4 +49,25 @@ program
     }
   });
 
+program
+  .command("check_staked_mint")
+  .description("Get details of the mint staked")
+  .option("-m, --mint <string>", "Mint")
+  .action(async (options, command) => {
+    const pdaList = await anchorProgram.account.stakingAccount.all([
+      {
+        memcmp: {
+          offset: 9, //need to prepend 8 bytes for anchor's disc
+          bytes: options.mint,
+        },
+      },
+    ]);
+
+    for (const pda of pdaList) {
+      console.log(
+        `Nft: ${pda.account.nft.toBase58()}, Owner: ${pda.account.owner.toBase58()}, Last claimed: ${pda.account.lastClaim.toNumber()}, Amount: ${pda.account.amount.toNumber()}`
+      );
+    }
+  });
+
 program.parse(process.argv);
